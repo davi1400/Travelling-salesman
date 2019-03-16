@@ -43,12 +43,12 @@ class Problem(object):
         aux=np.arange(self.len)
         np.random.shuffle(aux)
         for i in range(self.len):
-            self.world[i].state=i
+            self.world[i].state=aux[i]
             
     def vec(self):
         aux=[]
         for i in range(self.len):
-            aux.append=self.world[i].state
+            aux.append(self.world[i].state)
         return aux
     
     def cost(self):
@@ -73,21 +73,25 @@ class Genetic():
     def mutation(self,indices):
         aux=np.arange(self.len_popu)
         np.random.shuffle(aux)
-        
+        print("Mutação")
         new_pop=[]
-        for i in range(len(indices)):
-            aux_world=np.copy(self.population[indices[i]])
-            change=np.arange(self.len)
-            np.random.shuffle(change)
-            aux_world.change(change[0],change[1])
+        for i in range(int(0.1*self.len_popu)):
+            aux_world=self.population[indices[i]]
+            chang=np.arange(self.len)
+            np.random.shuffle(chang)
+            aux_world.change(chang[0],chang[1])
             new_pop.append(aux_world)
         return new_pop
     
     def reproduction(self,p1,p2):
+
         child1=Problem(self.len)
         child2=Problem(self.len)
+        for i in range(self.len):
+            child1.world[i].state=self.len+1
+            child2.world[i].state=self.len+1
         
-        cut=[int(self.len/3),2*int(self.len/3)]
+        cut=[int(self.len/3),int(2*self.len/3)]
         
         for i in range(cut[1]-cut[0]):
             child1.world[cut[0]+i].state=p1.world[cut[0]+i].state
@@ -96,8 +100,11 @@ class Genetic():
         i=cut[1]
         while(i!=cut[0]):
             j=i
+
             while(True):
-                if(len(np.where(child1.vec()==p2.world[j].state)[0])==0):
+#                print(j)
+#                print(p2.world[j].state)
+                if(np.shape(np.where(np.asanyarray(child1.vec())==p2.world[j].state)[0])[0]==0):
                     child1.world[i].state=p2.world[j].state
                     break
                 else:
@@ -108,7 +115,7 @@ class Genetic():
         while(i!=cut[0]):
             j=i
             while(True):
-                if(len(np.where(child2.vec()==p1.world[j].state)[0])==0):
+                if(np.shape(np.where(np.asanyarray(child2.vec())==p1.world[j].state)[0])[0]==0):
                     child2.world[i].state=p1.world[j].state
                     break
                 else:
@@ -119,13 +126,56 @@ class Genetic():
         return child1,child2
     
     def selection(self):
+        print("Seleção")
+
         pop_cost=[]
         for i in range(self.len_popu):
-            pop_cost.append(self.population[i].cost())
-        pop_cost=np.asanyarray(pop_cost)
-        return np.copy(self.population[pop_cost.argsort[-int(0.1*self.len):]])
+            pop_cost=np.append(pop_cost,self.population[i].cost())
+    
+
+        ind=np.asanyarray(pop_cost).argsort()[:int(0.1*self.len_popu)]
+
+        new_pop=[]
+        for i in range(int(0.1*self.len_popu)):
+            new_pop=np.append(new_pop,self.population[ind[i]])
+        return new_pop, ind
     
     def new_population(self):
+        newpop, ind= self.selection()
+        indices=np.arange(self.len_popu)
+        indices=np.delete(indices,ind)
+        
+        np.random.shuffle(indices)
+        
+        newpop=np.append(newpop,self.mutation(indices[:int(0.1*self.len_popu)]))
+        indices=indices[(int(0.1*self.len_popu)):]
+        
+        for i in range(0,(np.shape(indices)[0]-1),2):
+            newpop=np.append(newpop,self.reproduction(self.population[indices[i]],self.population[indices[i+1]]))
+        print("Reprodução")
+        return newpop
+    
+    def solve(self):
+        for i in range(100):
+            self.population=self.new_population()
+            self.len_popu=np.shape(self.population)[0]
+            print(i)
+
+        best, ind=self.selection()
+        
+        return best
+    
+    
+test= Genetic(16,100)
+best=test.solve()
+cost=[]
+for i in range(np.shape(test.population)[0]):
+    cost.append(test.population[i].cost())
+print("Melhor caminho:")
+print(best[0].vec())
+        
+                
+        
         
         
         
