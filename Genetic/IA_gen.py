@@ -5,6 +5,8 @@ Created on Mon Mar 8 17:46:17 2019
 @author: vitor
 """
 import numpy as np
+import time
+
 
 class Node(object):
 
@@ -164,15 +166,16 @@ class Genetic():
         best, ind=self.selection()
         
         return best
-    
-    
-test= Genetic(16,100)
-best=test.solve()
-cost=[]
-for i in range(np.shape(test.population)[0]):
-    cost.append(test.population[i].cost())
-print("Melhor caminho:")
-print(best[0].vec())
+
+t=[]
+b=[]
+for i in range(10):   
+    avg_time = time.time()    
+    test= Genetic(10,100)
+    best=test.solve()
+    avg_time=time.time()-avg_time
+    t.append(avg_time)
+    b.append(best[0])
         
                 
         
